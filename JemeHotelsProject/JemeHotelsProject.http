@@ -1,0 +1,6 @@
+@JemeHotelsProject_HostAddress = http://localhost:5042
+
+GET {{JemeHotelsProject_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

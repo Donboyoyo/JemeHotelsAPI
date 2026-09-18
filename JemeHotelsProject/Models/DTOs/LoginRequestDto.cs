@@ -4,8 +4,10 @@ namespace JemeHotelsProject.Models.DTOs
 {
     public class LoginRequestDto
     {
+
         [Required]
-        public string Username { get; set; } = string.Empty;
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Password)]

@@ -1,3 +1,5 @@
+using JemeHotelsProject;
+using JemeHotelsProject.Controllers;
 using JemeHotelsProject.Data;
 using JemeHotelsProject.Mappings;
 using JemeHotelsProject.Repositories;
@@ -16,7 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "NZ Walks API", Version = "v1" });
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Jeme Hotels API", Version = "v1" });
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -63,7 +65,8 @@ builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()
     .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>("JemeHotels")
     .AddEntityFrameworkStores<JemeHotelsAuthDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddPasswordValidator<CustomPasswordValidator<IdentityUser>>();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -73,7 +76,15 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 1;
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
+    options.Lockout.MaxFailedAccessAttempts = 3;
 });
+
+
+// Increasing the Token Lifespan
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+    options.TokenLifespan = TimeSpan.FromHours(2));
 
 // Adding authentication to the services:
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -98,7 +109,11 @@ builder.Services.AddAuthorization(Options =>
     Options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
     Options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
 
-});                                                         
+});
+
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, SQLEmailService>();
 
 
 var app = builder.Build();

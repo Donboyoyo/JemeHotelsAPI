@@ -13,7 +13,6 @@ namespace JemeHotelsProject.Models.DTOs
         [Required]
         public decimal Price { get; set; }
 
-        // This matches the frontend's FILE[] requirement
         public List<IFormFile>? Images { get; set; }
     }
 }

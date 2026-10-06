@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace JemeHotelsProject.Models.DTOs
 {
@@ -6,11 +7,13 @@ namespace JemeHotelsProject.Models.DTOs
     {
         [Required]
         [Range(101, 120, ErrorMessage ="Room number must be between 101 and 120")]
-        public int roomNumber { get; set; }
-
+        public int RoomNumber { get; set; }
         [Required]
-        public string roomType { get; set; }
-        public decimal price { get; set; }
+        public string RoomType { get; set; }
+        [Required]
+        public decimal Price { get; set; }
 
+        // This matches the frontend's FILE[] requirement
+        public List<IFormFile>? Images { get; set; }
     }
 }

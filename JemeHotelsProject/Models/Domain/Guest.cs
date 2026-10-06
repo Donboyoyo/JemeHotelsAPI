@@ -1,9 +1,14 @@
-﻿namespace JemeHotelsProject.Models.Domain
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace JemeHotelsProject.Models.Domain
 {
     public class Guest
     {
-        public Guid GuestID { get; set; }
-        public string Name { get; set; }
-        public string PhoneNo { get; set; }
+        public string GuestID { get; set; }
+        public string UserName { get; set; }
+
+        [Required]
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; } = string.Empty;
     }
 }

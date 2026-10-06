@@ -4,6 +4,7 @@ using JemeHotelsProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JemeHotelsProject.Migrations
 {
     [DbContext(typeof(JemeHotelsDbContext))]
-    partial class JemeHotelsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002095347_MakePhoneNumberNullable")]
+    partial class MakePhoneNumberNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,21 +31,12 @@ namespace JemeHotelsProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("GuestId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("isPaid")
-                        .HasColumnType("bit");
 
                     b.Property<int>("numberOfDays")
                         .HasColumnType("int");
@@ -64,12 +58,11 @@ namespace JemeHotelsProject.Migrations
                     b.Property<string>("GuestID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
+                    b.Property<string>("PhoneNo")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("GuestID");
@@ -83,8 +76,8 @@ namespace JemeHotelsProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("isAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<decimal>("price")
                         .HasColumnType("decimal(18,2)");

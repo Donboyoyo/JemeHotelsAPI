@@ -2,8 +2,8 @@
 {
     public class GuestDTO
     {
-        public Guid GuestID { get; set; }
-        public string Name { get; set; }
-        public string PhoneNo { get; set; }
+        public string UserName { get; set; }
+
+        public string Email { get; set; }
     }
 }

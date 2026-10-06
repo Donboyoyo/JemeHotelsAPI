@@ -28,7 +28,6 @@ namespace JemeHotelsProject.Controllers
         // Get guests
         // api/Guests?pageNumber=1&pageSize=10
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetGuests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
         {
             // Get data from database
@@ -60,23 +59,23 @@ namespace JemeHotelsProject.Controllers
             return Ok(guestDto);
         }
 
-        // Add guest
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddGuest([FromBody] AddGuestRequestDto addGuestRequestDto)
-        {
-            // Convert DTO to domain model
-            var guestDomainModel = mapper.Map<Guest>(addGuestRequestDto);
+        //// Add guest
+        //[HttpPost]
+        //[Authorize(Roles = "Admin")]
+        //public async Task<IActionResult> AddGuest([FromBody] AddGuestRequestDto addGuestRequestDto)
+        //{
+        //    // Convert DTO to domain model
+        //    var guestDomainModel = mapper.Map<Guest>(addGuestRequestDto);
 
-            // Add domain model to the database
-            guestDomainModel = await guestRepository.CreateAsync(guestDomainModel);
+        //    // Add domain model to the database
+        //    guestDomainModel = await guestRepository.CreateAsync(guestDomainModel);
 
-            // Convert domain model to DTO
-            var guestDto = mapper.Map<GuestDTO>(guestDomainModel);
+        //    // Convert domain model to DTO
+        //    var guestDto = mapper.Map<GuestDTO>(guestDomainModel);
 
             
-            // Return response to user
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = guestDto.GuestID }, guestDto);
-        }
+        //    // Return response to user
+        //    return CreatedAtAction(nameof(GetByIdAsync), new { id = guestDto.GuestID }, guestDto);
+        //}
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Configuration.Annotations;
 using JemeHotelsProject.Data;
+using JemeHotelsProject.Models.Domain;
 using JemeHotelsProject.Models.DTOs;
 using JemeHotelsProject.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -24,15 +25,17 @@ namespace JemeHotelsProject.Controllers
         private readonly ITokenRepository tokenRepository;
         private readonly IEmailService emailService;
         private readonly IConfiguration configuration;
+        private readonly JemeHotelsDbContext jemeHotelsDbContext;
 
         public AuthController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, 
-            ITokenRepository tokenRepository, IEmailService emailService, IConfiguration configuration)
+            ITokenRepository tokenRepository, IEmailService emailService, IConfiguration configuration, JemeHotelsDbContext jemeHotelsDbContext)
         {
             this.userManager = userManager;
             this.tokenRepository = tokenRepository;
             this.roleManager = roleManager;
             this.emailService = emailService;
             this.configuration = configuration;
+            this.jemeHotelsDbContext = jemeHotelsDbContext;
         }
 
         //initilize register
@@ -63,6 +66,16 @@ namespace JemeHotelsProject.Controllers
 
             if (identityResult.Succeeded)
             {
+
+                var newGuest = new Guest {
+                    GuestID = identityUser.Id,
+                    UserName = registerRequestDto.Username,
+                    Email = registerRequestDto.Email,
+                };
+
+                jemeHotelsDbContext.Guests.Add(newGuest);
+                await jemeHotelsDbContext.SaveChangesAsync();
+
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(identityUser);
                 var param = new Dictionary<string, string?>
                 {

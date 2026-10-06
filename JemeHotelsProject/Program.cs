@@ -125,10 +125,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<JemeHotelsDbContext>().Database.Migrate();
+    scope.ServiceProvider.GetRequiredService<JemeHotelsAuthDbContext>().Database.Migrate();
+}
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseStaticFiles();
 
 app.MapControllers();
 

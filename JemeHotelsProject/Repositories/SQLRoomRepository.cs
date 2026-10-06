@@ -27,9 +27,17 @@ namespace JemeHotelsProject.Repositories
 
         }
 
-        public async Task<List<Room>> GetAllAvailableAsync()
+        public async Task<List<Room>> GetAllAsync(string? room_type = null)
         {
-            return await dbContext.Rooms.Where(room => room.isAvailable == true).ToListAsync();
+            var roomsQuery = dbContext.Rooms.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(room_type) && 
+                (room_type.Equals("EnSuite", StringComparison.OrdinalIgnoreCase) || 
+                (room_type.Equals("Basic", StringComparison.OrdinalIgnoreCase)))) {
+                roomsQuery = roomsQuery.Where(r => r.roomType.ToLower() == room_type.ToLower());
+            }
+
+            return await roomsQuery.ToListAsync();
         }
     }
 }

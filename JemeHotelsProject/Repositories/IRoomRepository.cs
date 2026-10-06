@@ -4,9 +4,8 @@ namespace JemeHotelsProject.Repositories
 {
     public interface IRoomRepository
     {
-        Task<List<Room>> GetAllAsync();
+        Task<List<Room>> GetAllAsync(string? room_type = null);
 
-        Task<List<Room>> GetAllAvailableAsync();
 
         Task<Room> CreateAsync(Room room);
     }

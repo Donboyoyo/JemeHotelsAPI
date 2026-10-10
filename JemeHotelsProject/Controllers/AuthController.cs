@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -26,9 +27,10 @@ namespace JemeHotelsProject.Controllers
         private readonly IEmailService emailService;
         private readonly IConfiguration configuration;
         private readonly JemeHotelsDbContext jemeHotelsDbContext;
+        private readonly ILogger<AuthController> logger;
 
         public AuthController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, 
-            ITokenRepository tokenRepository, IEmailService emailService, IConfiguration configuration, JemeHotelsDbContext jemeHotelsDbContext)
+            ITokenRepository tokenRepository, IEmailService emailService, IConfiguration configuration, JemeHotelsDbContext jemeHotelsDbContext, ILogger<AuthController> logger)
         {
             this.userManager = userManager;
             this.tokenRepository = tokenRepository;
@@ -36,6 +38,7 @@ namespace JemeHotelsProject.Controllers
             this.emailService = emailService;
             this.configuration = configuration;
             this.jemeHotelsDbContext = jemeHotelsDbContext;
+            this.logger = logger;
         }
 
         //initilize register
@@ -44,10 +47,8 @@ namespace JemeHotelsProject.Controllers
         // POST: /api/Auth/Register 
         [HttpPost]
         [Route("Register")]
-
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequestDto)
         {
-
             var existingUser = await userManager.FindByEmailAsync(registerRequestDto.Email);
 
             if (existingUser != null)
@@ -61,45 +62,59 @@ namespace JemeHotelsProject.Controllers
                 Email = registerRequestDto.Email
             };
 
-
             var identityResult = await userManager.CreateAsync(identityUser, registerRequestDto.Password);
 
-            if (identityResult.Succeeded)
+            if (!identityResult.Succeeded)
             {
+                return BadRequest(identityResult.Errors.Select(e => e.Description));
+            }
 
-                var newGuest = new Guest {
-                    GuestID = identityUser.Id,
-                    UserName = registerRequestDto.Username,
-                    Email = registerRequestDto.Email,
-                };
+            var newGuest = new Guest
+            {
+                GuestID = identityUser.Id,
+                UserName = registerRequestDto.Username,
+                Email = registerRequestDto.Email,
+            };
 
-                jemeHotelsDbContext.Guests.Add(newGuest);
-                await jemeHotelsDbContext.SaveChangesAsync();
+            jemeHotelsDbContext.Guests.Add(newGuest);
+            await jemeHotelsDbContext.SaveChangesAsync();
 
+            var emailSent = true;
+
+            try
+            {
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(identityUser);
                 var param = new Dictionary<string, string?>
-                {
-                    {"token", token },
-                    {"email", identityUser.Email }
-                };
+        {
+            { "token", token },
+            { "email", identityUser.Email }
+        };
 
                 var clientUri = configuration["ClientURILink:EmailConfirmationURI"];
                 var callback = QueryHelpers.AddQueryString(clientUri!, param);
 
-
+                // Fail fast instead of hanging if the network/SMTP is unreachable
                 await emailService.SendEmailAsync(
-                    identityUser.Email,
+                    identityUser.Email!,
                     "Confirm your email",
-                    $"Hello {identityUser.UserName}, <br><br>" + 
-                    $"Your account has been registered successfully <br><br>" + 
-                    $"Please click <a href= '{callback}'> here </a> to confirm your email"
-                    );
-                
-                return Ok(new { message = "User has been registered successfully" });
-
+                    $"Hello {identityUser.UserName}, <br><br>" +
+                    $"Your account has been registered successfully <br><br>" +
+                    $"Please click <a href='{callback}'> here </a> to confirm your email"
+                ).WaitAsync(TimeSpan.FromSeconds(15));
+            }
+            catch (Exception ex)
+            {
+                emailSent = false;
+                logger.LogError(ex, "Failed to send confirmation email to {Email}", identityUser.Email);
             }
 
-            return BadRequest("Something went wrong.");
+            return Ok(new
+            {
+                message = emailSent
+                    ? "User has been registered successfully. Please check your email to confirm your account."
+                    : "User has been registered, but we couldn't send the confirmation email. Please request a new one later.",
+                emailSent
+            });
         }
 
 
